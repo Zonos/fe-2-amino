@@ -1,0 +1,178 @@
+@use 'theme';
+
+.selectWrapper {
+  position: relative;
+  width: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: fit-content;
+
+  &.inlineLabel {
+    .label {
+      color: theme.$amino-text-color-secondary;
+      height: auto;
+      margin-right: -8px;
+      font-weight: 400;
+    }
+
+    .selectTrigger {
+      min-width: 0;
+    }
+  }
+}
+
+.valueWrapper {
+  display: flex;
+  align-items: center;
+  gap: theme.$amino-space-12;
+  width: 100%;
+
+  &[data-placeholder] {
+    color: theme.$amino-gray-600;
+    font-weight: 400;
+    padding: 0px 8px 0px 12px;
+
+    &.hasIcon {
+      padding-left: 8px;
+    }
+  }
+}
+
+.selectTrigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  background: theme.$amino-raised-surface-color;
+  border-radius: theme.$amino-radius-8;
+  padding: 0px 8px 0px 12px;
+  font-size: theme.$amino-font-size-base;
+  font-weight: 500;
+  line-height: 1;
+  gap: 12px;
+  cursor: pointer;
+  border: none;
+  box-shadow: theme.$amino-shadow-select-base;
+  min-width: 240px;
+
+  &.hasIcon {
+    padding-left: 8px;
+  }
+
+  &:focus {
+    box-shadow: theme.$amino-shadow-select-active;
+    outline: none;
+  }
+  &[data-placeholder] {
+    color: theme.$amino-gray-600;
+    font-weight: 400;
+    padding: 0px 8px 0px 12px;
+    gap: theme.$amino-space-12;
+
+    &.hasIcon {
+      padding-left: 8px;
+    }
+  }
+
+  &[data-disabled] {
+    opacity: theme.$amino-opacity-disabled;
+    cursor: not-allowed;
+  }
+}
+
+.iconWrapper {
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  color: theme.$amino-gray-600;
+  height: 24px;
+  width: 24px;
+}
+
+.label {
+  font-size: theme.$amino-font-size-base;
+  color: theme.$amino-text-color-secondary;
+  pointer-events: none;
+  height: 24px;
+}
+
+.selectContent {
+  overflow: hidden;
+  height: auto;
+  flex-direction: column;
+  gap: 4px;
+  background-color: theme.$amino-surface-color;
+  box-shadow: theme.$amino-v3-shadow-large;
+  border-radius: theme.$amino-radius-10;
+  padding: 4px;
+  margin: 2px 0px;
+  width: var(--radix-select-trigger-width);
+  min-width: 240px;
+}
+
+.selectItem {
+  padding: 4px 8px;
+  border-radius: theme.$amino-radius-6;
+  cursor: pointer;
+  outline: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-direction: row;
+  color: theme.$amino-text-color;
+  font-size: theme.$amino-font-size-base;
+  font-weight: 400;
+  height: 32px;
+
+  &:hover {
+    background-color: theme.$amino-hover-color;
+
+    [data-theme='night'] & {
+      background-color: theme.$amino-gray-100;
+    }
+  }
+
+  &[data-disabled] {
+    opacity: theme.$amino-opacity-disabled;
+    cursor: not-allowed;
+  }
+
+  &[data-state='checked'] {
+    color: theme.$amino-blue-600;
+    font-weight: 500;
+
+    .optionIcon {
+      color: theme.$amino-blue-600;
+    }
+  }
+}
+
+.optionContent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.optionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: theme.$amino-gray-600;
+}
+
+.hasError {
+  .selectTrigger {
+    box-shadow: theme.$amino-shadow-select-error;
+  }
+}
+
+.helpText {
+  margin-top: 4px;
+  font-size: theme.$amino-font-size-s;
+  color: theme.$amino-text-color;
+
+  &.error {
+    color: theme.$amino-error;
+  }
+}

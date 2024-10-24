@@ -65,6 +65,7 @@
     "@dnd-kit/utilities": "^3.2.1",
     "@floating-ui/react": "^0.26.0",
     "@mui/material": "^5.14.0",
+    "@radix-ui/react-select": "^2.1.2",
     "@radix-ui/react-slider": "^1.1.2",
     "@types/topojson-client": "^3.1.1",
     "clsx": "^2.0.0",
