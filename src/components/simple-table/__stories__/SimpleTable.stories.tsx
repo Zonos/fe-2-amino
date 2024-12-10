@@ -18,6 +18,7 @@ import {
 import { Text } from 'src/components/text/Text';
 import { CheckmarkIcon } from 'src/icons/CheckmarkIcon';
 import { EditDuotoneIcon } from 'src/icons/EditDuotoneIcon';
+import { type Flag, FlagIcon } from 'src/icons/flag-icon/FlagIcon';
 import { RemoveIcon } from 'src/icons/RemoveIcon';
 import { ThreeDotIcon } from 'src/icons/ThreeDotIcon';
 import { TrashCanDuotoneIcon } from 'src/icons/TrashCanDuotoneIcon';
@@ -50,7 +51,7 @@ const items: DummyData[] = [
     id: 1,
     name: 'John',
     optionalField: 'optional',
-    truncateText,
+    truncateText: 'Not long enough',
     vegan: false,
   },
   {
@@ -147,11 +148,24 @@ const tableHeaders: SimpleTableHeader<DummyData>[] = [
 ];
 
 export const Basic = () => (
-  <SimpleTable
-    headers={tableHeaders}
-    items={items}
-    keyExtractor={item => String(item.id)}
-  />
+  <>
+    <Text type="header">With hover</Text>
+    <SimpleTable
+      className="with-hover"
+      headers={tableHeaders}
+      items={items}
+      keyExtractor={item => String(item.id)}
+    />
+    <Divider />
+    <Text type="header">Without hover</Text>
+    <SimpleTable
+      className="no-hover"
+      headers={tableHeaders}
+      items={items}
+      keyExtractor={item => String(item.id)}
+      noHoverBackground
+    />
+  </>
 );
 
 export const Long = () => (
@@ -173,6 +187,16 @@ export const Long = () => (
         ...item,
         id: item.id + 300,
         name: `${item.name} 4`,
+      },
+      {
+        ...item,
+        id: item.id + 400,
+        name: `${item.name} 5`,
+      },
+      {
+        ...item,
+        id: item.id + 500,
+        name: `${item.name} 6`,
       },
     ])}
     keyExtractor={item => String(item.id)}
@@ -321,30 +345,182 @@ export const Loading = () => {
   );
 };
 
+export const Bordered = () => {
+  const augmentedHeaders: SimpleTableHeader<DummyData>[] = tableHeaders
+    .filter(Boolean)
+    .map(header => ({
+      ...header,
+      minWidth: header.minWidth || 50,
+      name: null,
+    }));
+  return (
+    <>
+      <Text type="header">With headers</Text>
+      <SimpleTable
+        bordered
+        headers={tableHeaders}
+        items={items}
+        keyExtractor={item => String(item.id)}
+      />
+      <Divider />
+      <Text type="header">Without headers</Text>
+      <SimpleTable
+        bordered
+        headers={augmentedHeaders}
+        items={items}
+        keyExtractor={item => String(item.id)}
+      />
+    </>
+  );
+};
+
+export const Collapsible = () => {
+  const [selectedRowIndexes, setSelectedRowIndexes] = useState<number[]>([]);
+  const [expandedItemKeys, setExpandedItemKeys] = useState<string[]>([]);
+  const toggleItem = (id: string) =>
+    setExpandedItemKeys(
+      expandedItemKeys.includes(id)
+        ? expandedItemKeys.filter(x => x !== id)
+        : expandedItemKeys.concat(id),
+    );
+
+  const checkboxAllValue = selectedRowIndexes.length === items.length;
+
+  const handleCheckboxAllChange = () => {
+    if (selectedRowIndexes.length === items.length) {
+      setSelectedRowIndexes([]);
+    } else {
+      setSelectedRowIndexes(items.map((_, index) => index));
+    }
+  };
+
+  const handleCheckboxRowChange = (
+    value: boolean,
+    item: DummyData,
+    index: number,
+  ) => {
+    if (value) {
+      setSelectedRowIndexes([...selectedRowIndexes, index]);
+    } else {
+      setSelectedRowIndexes(
+        selectedRowIndexes.filter(selectedIndex => selectedIndex !== index),
+      );
+    }
+  };
+  const collapseContent = items.map(item => ({
+    content: (
+      <table style={{ width: '100%' }}>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Vegan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style={{ border: 'none' }}>{item.name}</td>
+            <td style={{ border: 'none' }}>{item.age}</td>
+            <td style={{ border: 'none' }}>{item.vegan}</td>
+          </tr>
+        </tbody>
+      </table>
+    ),
+    key: String(item.id),
+  }));
+
+  const adjustedCollapseContent = collapseContent.filter(
+    (_, index) => index !== 3,
+  );
+
+  return (
+    <>
+      <Text type="header">Normal</Text>
+      <SimpleTable
+        className="normal-table"
+        collapsible={{
+          collapseContent,
+          enabled: true,
+          expandedItemKeys,
+          toggleItem,
+        }}
+        headers={tableHeaders}
+        items={items}
+        keyExtractor={item => String(item.id)}
+      />
+      <Divider />
+      <Text type="header">Bordered</Text>
+      <SimpleTable
+        bordered
+        className="bordered-table"
+        collapsible={{
+          collapseContent: adjustedCollapseContent,
+          enabled: true,
+          expandedItemKeys,
+          toggleItem,
+        }}
+        headers={tableHeaders}
+        items={items}
+        keyExtractor={item => String(item.id)}
+      />
+      <Divider />
+      <Text type="header">Selectable</Text>
+      <SimpleTable
+        bordered
+        className="selectable-table"
+        collapsible={{
+          collapseContent,
+          enabled: true,
+          expandedItemKeys,
+          toggleItem,
+        }}
+        headers={tableHeaders}
+        items={items}
+        keyExtractor={item => String(item.id)}
+        selectable={{
+          anySelected: selectedRowIndexes.length > 0,
+          enabled: true,
+          headerCheckboxValue: checkboxAllValue,
+          isRowChecked: (_, index) => selectedRowIndexes.includes(index),
+          onHeaderCheckboxChange: handleCheckboxAllChange,
+          onRowCheckboxChange: handleCheckboxRowChange,
+        }}
+      />
+    </>
+  );
+};
+
 export const Custom = () => {
   const [shouldTruncate, setShouldTruncate] = useState(true);
   const [viewOneRow, setViewOneRow] = useState(false);
 
   type AugmentedDummyData = DummyData & {
+    countryCode: Flag;
     hoverField: null;
     truncateText?: string;
   };
 
   const augmentedItems: AugmentedDummyData[] = items
     .flatMap(item => [
-      item,
       {
         ...item,
+        countryCode: 'HK' as Flag,
+      },
+      {
+        ...item,
+        countryCode: 'US' as Flag,
         id: item.id + 100,
         name: `${item.name} 2`,
       },
       {
         ...item,
+        countryCode: 'CA' as Flag,
         id: item.id + 200,
         name: `${item.name} 3`,
       },
       {
         ...item,
+        countryCode: 'GB' as Flag,
         id: item.id + 300,
         name: `${item.name} 4`,
       },
@@ -419,6 +595,14 @@ export const Custom = () => {
   const augmentedHeaders: SimpleTableHeader<AugmentedDummyData>[] = [
     ...tableHeaders.filter(header => header?.key !== 'truncateText'),
     {
+      align: 'start',
+      key: 'countryCode',
+      name: 'Country',
+      renderCustom: countryCode => (
+        <FlagIcon code={countryCode} iconScale="large" />
+      ),
+    },
+    {
       key: 'truncateText',
       name: (
         <Checkbox
@@ -467,6 +651,66 @@ export const Custom = () => {
           onHeaderCheckboxChange: handleCheckboxAllChange,
           onRowCheckboxChange: handleCheckboxRowChange,
         }}
+      />
+    </>
+  );
+};
+
+export const OnRowClick = () => {
+  const [expandedItemKeys, setExpandedItemKeys] = useState<string[]>([]);
+  const toggleItem = (id: string) =>
+    setExpandedItemKeys(
+      expandedItemKeys.includes(id)
+        ? expandedItemKeys.filter(x => x !== id)
+        : expandedItemKeys.concat(id),
+    );
+  const collapseContent = items.map(item => ({
+    content: (
+      <table style={{ width: '100%' }}>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Vegan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style={{ border: 'none' }}>{item.name}</td>
+            <td style={{ border: 'none' }}>{item.age}</td>
+            <td style={{ border: 'none' }}>{item.vegan}</td>
+          </tr>
+        </tbody>
+      </table>
+    ),
+    key: String(item.id),
+  }));
+
+  return (
+    <>
+      <Text type="header">Normal table</Text>
+      <SimpleTable
+        headers={tableHeaders}
+        items={items}
+        keyExtractor={item => String(item.id)}
+        onRowClick={item => {
+          alert(`Clicked ${item.name}`);
+        }}
+      />
+      <Divider />
+      <Text type="header">Collapsible table</Text>
+      <SimpleTable
+        className="collapsible"
+        collapsible={{
+          collapseContent,
+          enabled: true,
+          expandedItemKeys,
+          toggleItem,
+        }}
+        headers={tableHeaders}
+        items={items}
+        keyExtractor={item => String(item.id)}
+        onRowClick={item => alert(`Clicked ${item.name}`)}
       />
     </>
   );

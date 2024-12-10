@@ -4,6 +4,7 @@ import clsx from 'clsx';
 
 import { Checkbox } from 'src/components/checkbox/Checkbox';
 import { Skeleton } from 'src/components/skeleton/Skeleton';
+import { TableRowCollapse } from 'src/components/table/TableRowCollapse';
 import { Text } from 'src/components/text/Text';
 import { Tooltip } from 'src/components/tooltip/Tooltip';
 import type { BaseProps } from 'src/types/BaseProps';
@@ -36,6 +37,8 @@ const getTooltipPlacement = (
       return 'bottom-start';
   }
 };
+
+const tooltipDelay = 800;
 
 type SimpleTableHeaderBaseProps = {
   /**
@@ -89,6 +92,30 @@ export type SimpleTableProps<T extends object> = BaseProps & {
     children: ReactNode;
     href: string;
   }>;
+  /**
+   * @default false
+   * Use bordered variant of table
+   */
+  bordered?: boolean;
+  /**
+   * @default false
+   * Enable rows to collapse and expand with more information
+   */
+  collapsible?: {
+    /**
+     * Content to show when row is expanded
+     */
+    collapseContent?: {
+      content: ReactNode;
+      /**
+       * @note Key must match the key of the item it is expanding from
+       */
+      key: string;
+    }[];
+    enabled: boolean;
+    expandedItemKeys: string[];
+    toggleItem: (key: string) => void;
+  };
   headers: SimpleTableHeader<T>[];
   items: T[];
   /**
@@ -168,7 +195,13 @@ export type SimpleTableProps<T extends object> = BaseProps & {
  * - 'cell-hover-show': Shows only when the cell is hovered
  */
 export const SimpleTable = <T extends object>({
+  bordered = false,
   className,
+  collapsible = {
+    enabled: false,
+    expandedItemKeys: [],
+    toggleItem: () => {},
+  },
   CustomLinkComponent,
   getRowLink,
   headers,
@@ -229,6 +262,8 @@ export const SimpleTable = <T extends object>({
           <td className={tdClassNames} style={containerStyle}>
             <Tooltip
               disabled={header.textWrapMethod !== 'truncate'}
+              enterDelay={tooltipDelay}
+              enterNextDelay={tooltipDelay}
               placement={tooltipPlacement}
               subtitle={content}
             >
@@ -248,6 +283,9 @@ export const SimpleTable = <T extends object>({
         <td className={tdClassNames} style={containerStyle}>
           <Tooltip
             disabled={header.textWrapMethod !== 'truncate'}
+            enterDelay={tooltipDelay}
+            enterNextDelay={tooltipDelay}
+            placement={tooltipPlacement}
             subtitle={content}
           >
             {/* Child div required for proper truncating */}
@@ -303,6 +341,60 @@ export const SimpleTable = <T extends object>({
           ))}
         </tr>
       ));
+    }
+
+    if (collapsible.enabled && collapsible.collapseContent?.length) {
+      const { collapseContent, expandedItemKeys, toggleItem } = collapsible;
+      return items.map((item, index) => {
+        const key = keyExtractor(item);
+        const collapsed = !expandedItemKeys.includes(key);
+        const rowCollapseContent = collapseContent?.find(x => x.key === key)
+          ?.content;
+        return (
+          <TableRowCollapse
+            key={key}
+            className={clsx(
+              !noHoverBackground && styles.withHover,
+              collapsed && styles.collapsed,
+              rowCollapseContent && styles.hasContent,
+            )}
+            collapsed={collapsed}
+            onToggleCollapse={() => {
+              toggleItem(key);
+              onRowClick?.(item);
+            }}
+            rowContent={
+              <>
+                {selectable.enabled && (
+                  <td>
+                    {selectable.renderCustomRowCheckbox?.(item, index) || (
+                      <Checkbox
+                        checked={
+                          selectable.isRowChecked?.(item, index) || false
+                        }
+                        disabled={
+                          selectable.isRowCheckboxDisabled?.(item, index) ||
+                          false
+                        }
+                        onChange={checked =>
+                          selectable.onRowCheckboxChange?.(checked, item, index)
+                        }
+                      />
+                    )}
+                  </td>
+                )}
+                {headers.map(header => (
+                  <Fragment key={header.key}>
+                    {renderHeader(header, item)}
+                  </Fragment>
+                ))}
+              </>
+            }
+          >
+            {rowCollapseContent}
+          </TableRowCollapse>
+        );
+      });
     }
 
     return items.map((item, index) => {
@@ -364,7 +456,14 @@ export const SimpleTable = <T extends object>({
         ...style,
       }}
     >
-      <table className={styles.tableStyled}>
+      <table
+        className={clsx(
+          collapsible.enabled && styles.collapsible,
+          styles.tableStyled,
+          bordered && styles.bordered,
+          headers.every(header => !header.name) && styles.noHeaders,
+        )}
+      >
         <colgroup>
           {!!selectable.onHeaderCheckboxChange && <col width={0} />}
           {headers.map(header => (
@@ -381,6 +480,7 @@ export const SimpleTable = <T extends object>({
               }
             />
           ))}
+          {collapsible.enabled && <col />}
         </colgroup>
         <thead>
           <tr>
@@ -415,6 +515,7 @@ export const SimpleTable = <T extends object>({
                 )}
               </th>
             ))}
+            {collapsible.enabled && <th />}
           </tr>
         </thead>
         <tbody>{renderRows()}</tbody>

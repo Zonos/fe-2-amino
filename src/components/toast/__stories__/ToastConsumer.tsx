@@ -1,6 +1,9 @@
 import { useContext, useState } from 'react';
 
+import { v4 as uuidv4 } from 'uuid';
+
 import { Button } from 'src/components/button/Button';
+import { Flex } from 'src/components/flex/Flex';
 import { Input } from 'src/components/input/Input';
 import { Select } from 'src/components/select/Select';
 import { VStack } from 'src/components/stack/VStack';
@@ -12,7 +15,7 @@ import styles from './ToastConsumer.stories.module.scss';
 const useNotify = () => useContext(ToastContext);
 
 export const ToastConsumer = () => {
-  const notify = useNotify();
+  const { dismissAllToasts, dismissToast, notify } = useNotify();
 
   const [message, setMessage] = useState('Your custom message');
   const [duration, setDuration] = useState(6000);
@@ -56,6 +59,60 @@ export const ToastConsumer = () => {
           variant="primary"
         >
           Information
+        </Button>
+        <Button
+          onClick={() =>
+            notify('Short persisting', { duration, isPersistent: true })
+          }
+        >
+          Short persisting
+        </Button>
+        <Button
+          onClick={() =>
+            notify('Short persisting with error', {
+              actions: (
+                <Button outline variant="danger">
+                  Request support
+                </Button>
+              ),
+              intent: 'error',
+              isPersistent: true,
+            })
+          }
+        >
+          Short persisting with error
+        </Button>
+        <Button
+          onClick={() => {
+            const uniqueId = uuidv4();
+            notify(
+              `Long persisting example: Error: Field "userProfl" does not exist
+                on type "Query". Did you mean "userProfile"? [Location: line 3,
+                column 5].`,
+              {
+                actions: (
+                  <Flex flexDirection="column">
+                    <Button
+                      onClick={() => dismissToast(uniqueId)}
+                      outline
+                      variant="danger"
+                    >
+                      External dismiss
+                    </Button>
+
+                    <Button onClick={dismissAllToasts} outline variant="danger">
+                      Dismiss all
+                    </Button>
+                  </Flex>
+                ),
+                id: uniqueId,
+                intent: 'error',
+                isPersistent: true,
+              },
+            );
+          }}
+        >
+          Long persisting
         </Button>
         <div className={styles.customWrapper}>
           <textarea
