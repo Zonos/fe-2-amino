@@ -22,8 +22,8 @@ export type RadixSelectProps<V extends SelectValue = SelectValue> =
     options: SelectOption<V>[];
     placeholder?: string;
     size?: Size;
-    value: V | null;
-    onChange: (value: V | null) => void;
+    value: SelectOption<V>[] | SelectOption<V> | null;
+    onChange: (value: SelectOption<V>[] | SelectOption<V> | null) => void;
   };
 
 export const RadixSelect = <V extends SelectValue>({
@@ -40,7 +40,9 @@ export const RadixSelect = <V extends SelectValue>({
   style,
   value,
 }: RadixSelectProps<V>) => {
-  const selectedOption = options.find(opt => opt.value === value);
+  const selectedOption = Array.isArray(value)
+    ? options.find(opt => opt.value === value[0]?.value)
+    : options.find(opt => opt.value === value?.value);
 
   const getRadius = () => {
     switch (size) {
@@ -83,9 +85,9 @@ export const RadixSelect = <V extends SelectValue>({
         disabled={disabled}
         onValueChange={val => {
           const option = options.find(opt => opt.value?.toString() === val);
-          onChange(option?.value ?? null);
+          onChange(option ?? null);
         }}
-        value={value?.toString()}
+        value={selectedOption?.value?.toString()}
       >
         <Select.Trigger
           className={clsx(
@@ -98,8 +100,12 @@ export const RadixSelect = <V extends SelectValue>({
             height: getHeight(),
           }}
         >
+          {icon && (
+            <span className={styles.iconWrapper}>
+              {selectedOption?.icon || icon}
+            </span>
+          )}
           <span className={styles.valueWrapper}>
-            {icon}
             <Select.Value placeholder={placeholder}>
               {selectedOption?.label || placeholder}
             </Select.Value>
@@ -124,12 +130,22 @@ export const RadixSelect = <V extends SelectValue>({
                       {option.icon && (
                         <span className={styles.optionIcon}>{option.icon}</span>
                       )}
-                      {option.label}
+                      <div className={styles.optionTextWrapper}>
+                        <span className={styles.optionLabel}>
+                          {option.label}
+                        </span>
+                        {!option.secondaryText ? (
+                          <Select.ItemIndicator>
+                            <CheckmarkIcon color="blue600" size={20} />
+                          </Select.ItemIndicator>
+                        ) : (
+                          <span className={styles.optionSecondaryText}>
+                            {option.secondaryText}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </Select.ItemText>
-                  <Select.ItemIndicator>
-                    <CheckmarkIcon color="blue600" size={20} />
-                  </Select.ItemIndicator>
                 </Select.Item>
               ))}
             </Select.Viewport>

@@ -10,5 +10,6 @@ export type SelectOption<V extends SelectValue = SelectValue> = {
    * For checkboxes
    */
   labelDescription?: string;
+  secondaryText?: string;
   value: V;
 };

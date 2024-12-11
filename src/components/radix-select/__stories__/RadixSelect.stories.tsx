@@ -199,3 +199,26 @@ InlineSelect.args = {
   ],
   value: '1',
 };
+
+export const WithSecondaryText = Template.bind({});
+WithSecondaryText.args = {
+  label: 'Select box',
+  options: [
+    {
+      label: 'Large square box',
+      secondaryText: '24x24x24 in',
+      value: '1',
+    },
+    {
+      label: 'Medium square box',
+      secondaryText: '24x28x18 in',
+      value: '2',
+    },
+    {
+      label: 'Small square box',
+      secondaryText: '26x18x8 in',
+      value: '3',
+    },
+  ],
+  value: null,
+};
