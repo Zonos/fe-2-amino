@@ -104,38 +104,35 @@ export const RadixInlineSelect = <V extends SelectValue>({
           </Select.Icon>
         </Select.Trigger>
 
-        <Select.Portal>
-          <Select.Content
-            className={styles.selectContent}
-            position="popper"
-            style={{
-              borderRadius: getRadius(),
-            }}
-          >
-            <Select.Viewport>
-              {options.map(option => (
-                <Select.Item
-                  key={option.value?.toString()}
-                  className={styles.selectItem}
-                  disabled={option.isDisabled}
-                  value={option.value?.toString() ?? ''}
-                >
-                  <Select.ItemText>
-                    <div className={styles.optionContent}>
-                      {option.icon && (
-                        <span className={styles.optionIcon}>{option.icon}</span>
-                      )}
-                      {option.label}
+        <Select.Content
+          className={styles.selectContent}
+          position="popper"
+          style={{
+            borderRadius: getRadius(),
+          }}
+        >
+          <Select.Viewport>
+            {options.map(option => (
+              <Select.Item
+                key={option.value?.toString()}
+                className={styles.selectItem}
+                disabled={option.isDisabled}
+                value={option.value?.toString() ?? ''}
+              >
+                <Select.ItemText>
+                  <div className={styles.optionContent}>
+                    <div className={styles.optionTextWrapper}>
+                      <span className={styles.optionLabel}>{option.label}</span>
+                      <Select.ItemIndicator>
+                        <CheckmarkIcon color="blue600" size={20} />
+                      </Select.ItemIndicator>
                     </div>
-                  </Select.ItemText>
-                  <Select.ItemIndicator>
-                    <CheckmarkIcon color="blue600" size={20} />
-                  </Select.ItemIndicator>
-                </Select.Item>
-              ))}
-            </Select.Viewport>
-          </Select.Content>
-        </Select.Portal>
+                  </div>
+                </Select.ItemText>
+              </Select.Item>
+            ))}
+          </Select.Viewport>
+        </Select.Content>
       </Select.Root>
       {helpText && (
         <div className={clsx(styles.helpText, error && styles.error)}>

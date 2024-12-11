@@ -9,15 +9,13 @@ $height: var(--amino-radix-select-height);
   width: auto;
 
   &.inlineLabel {
+    width: fit-content;
+
     .label {
       color: theme.$amino-text-color-secondary;
       height: auto;
       margin-right: -8px;
       font-weight: 400;
-    }
-
-    .selectTrigger {
-      min-width: 0;
     }
   }
 }
@@ -162,6 +160,7 @@ $height: var(--amino-radix-select-height);
   align-items: center;
   justify-content: center;
   color: theme.$amino-gray-600;
+  margin-right: 12px;
 }
 
 .hasError {
