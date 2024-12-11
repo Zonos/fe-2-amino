@@ -2,6 +2,8 @@ import { useState } from 'react';
 
 import type { Meta, StoryFn } from '@storybook/react';
 
+import { Button } from 'src/components/button/Button';
+import { CoverSheet } from 'src/components/cover-sheet/CoverSheet';
 import {
   type RadixInlineSelectProps,
   RadixInlineSelect,
@@ -221,4 +223,30 @@ WithSecondaryText.args = {
     },
   ],
   value: null,
+};
+
+export const WithCoversheet = () => {
+  const [openCoversheet, setOpenCoversheet] = useState(false);
+
+  return (
+    <>
+      <Button onClick={() => setOpenCoversheet(true)}>Open Coversheet</Button>
+      <CoverSheet
+        label="Select test"
+        onClose={() => setOpenCoversheet(false)}
+        open={openCoversheet}
+      >
+        <BasicSelect
+          label="Choose an option"
+          onChange={() => {}}
+          options={[
+            { label: 'Option 1', value: '1' },
+            { label: 'Option 2', value: '2' },
+            { label: 'Option 3', value: '3' },
+          ]}
+          value={null}
+        />
+      </CoverSheet>
+    </>
+  );
 };

@@ -1,5 +1,8 @@
 @use 'theme';
 
+$borderRadius: var(--amino-radix-select-border-radius);
+$height: var(--amino-radix-select-height);
+
 .selectWrapper {
   position: relative;
   gap: 4px;
@@ -50,8 +53,10 @@
   cursor: pointer;
   border: none;
   box-shadow: theme.$amino-shadow-select-base;
-  width: auto;
+  width: 100%;
   min-width: min-content;
+  height: $height;
+  border-radius: $borderRadius;
 
   &.hasIcon {
     padding-left: 8px;

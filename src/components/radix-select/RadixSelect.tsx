@@ -96,8 +96,8 @@ export const RadixSelect = <V extends SelectValue>({
             icon && styles.hasIcon,
           )}
           style={{
-            borderRadius: getRadius(),
-            height: getHeight(),
+            '--amino-radix-select-border-radius': getRadius(),
+            '--amino-radix-select-height': getHeight(),
           }}
         >
           {icon && (
@@ -115,42 +115,38 @@ export const RadixSelect = <V extends SelectValue>({
           </Select.Icon>
         </Select.Trigger>
 
-        <Select.Portal>
-          <Select.Content className={styles.selectContent} position="popper">
-            <Select.Viewport>
-              {options.map(option => (
-                <Select.Item
-                  key={option.value?.toString()}
-                  className={styles.selectItem}
-                  disabled={option.isDisabled}
-                  value={option.value?.toString() ?? ''}
-                >
-                  <Select.ItemText>
-                    <div className={styles.optionContent}>
-                      {option.icon && (
-                        <span className={styles.optionIcon}>{option.icon}</span>
-                      )}
-                      <div className={styles.optionTextWrapper}>
-                        <span className={styles.optionLabel}>
-                          {option.label}
+        <Select.Content className={styles.selectContent} position="popper">
+          <Select.Viewport>
+            {options.map(option => (
+              <Select.Item
+                key={option.value?.toString()}
+                className={styles.selectItem}
+                disabled={option.isDisabled}
+                value={option.value?.toString() ?? ''}
+              >
+                <Select.ItemText>
+                  <div className={styles.optionContent}>
+                    {option.icon && (
+                      <span className={styles.optionIcon}>{option.icon}</span>
+                    )}
+                    <div className={styles.optionTextWrapper}>
+                      <span className={styles.optionLabel}>{option.label}</span>
+                      {!option.secondaryText ? (
+                        <Select.ItemIndicator>
+                          <CheckmarkIcon color="blue600" size={20} />
+                        </Select.ItemIndicator>
+                      ) : (
+                        <span className={styles.optionSecondaryText}>
+                          {option.secondaryText}
                         </span>
-                        {!option.secondaryText ? (
-                          <Select.ItemIndicator>
-                            <CheckmarkIcon color="blue600" size={20} />
-                          </Select.ItemIndicator>
-                        ) : (
-                          <span className={styles.optionSecondaryText}>
-                            {option.secondaryText}
-                          </span>
-                        )}
-                      </div>
+                      )}
                     </div>
-                  </Select.ItemText>
-                </Select.Item>
-              ))}
-            </Select.Viewport>
-          </Select.Content>
-        </Select.Portal>
+                  </div>
+                </Select.ItemText>
+              </Select.Item>
+            ))}
+          </Select.Viewport>
+        </Select.Content>
       </Select.Root>
       {helpText && (
         <div className={clsx(styles.helpText, error && styles.error)}>
