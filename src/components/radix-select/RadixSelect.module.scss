@@ -2,11 +2,8 @@
 
 .selectWrapper {
   position: relative;
-  width: auto;
-  display: flex;
-  flex-direction: column;
   gap: 4px;
-  width: fit-content;
+  width: auto;
 
   &.inlineLabel {
     .label {
@@ -25,7 +22,7 @@
 .valueWrapper {
   display: flex;
   align-items: center;
-  gap: theme.$amino-space-12;
+  gap: 12px;
   width: 100%;
 
   &[data-placeholder] {
@@ -43,9 +40,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
-  width: 100%;
   background: theme.$amino-raised-surface-color;
-  border-radius: theme.$amino-radius-8;
+  border-radius: 8px;
   padding: 0px 8px 0px 12px;
   font-size: theme.$amino-font-size-base;
   font-weight: 500;
@@ -54,7 +50,8 @@
   cursor: pointer;
   border: none;
   box-shadow: theme.$amino-shadow-select-base;
-  min-width: 240px;
+  width: auto;
+  min-width: min-content;
 
   &.hasIcon {
     padding-left: 8px;
@@ -68,7 +65,7 @@
     color: theme.$amino-gray-600;
     font-weight: 400;
     padding: 0px 8px 0px 12px;
-    gap: theme.$amino-space-12;
+    gap: 12px;
 
     &.hasIcon {
       padding-left: 8px;
@@ -95,35 +92,32 @@
   color: theme.$amino-text-color-secondary;
   pointer-events: none;
   height: 24px;
+  text-overflow: ellipsis;
 }
 
 .selectContent {
   overflow: hidden;
   height: auto;
-  flex-direction: column;
   gap: 4px;
   background-color: theme.$amino-surface-color;
   box-shadow: theme.$amino-v3-shadow-large;
-  border-radius: theme.$amino-radius-10;
+  border-radius: 10px;
   padding: 4px;
   margin: 2px 0px;
-  width: var(--radix-select-trigger-width);
-  min-width: 240px;
+  min-width: var(--radix-select-trigger-width);
+  max-width: max-content;
+  z-index: 999;
 }
 
 .selectItem {
-  padding: 4px 8px;
-  border-radius: theme.$amino-radius-6;
+  padding: 8px;
+  border-radius: 6px;
   cursor: pointer;
   outline: none;
-  display: flex;
   align-items: center;
-  gap: 8px;
-  flex-direction: row;
   color: theme.$amino-text-color;
   font-size: theme.$amino-font-size-base;
   font-weight: 400;
-  height: 32px;
 
   &:hover {
     background-color: theme.$amino-hover-color;
@@ -142,6 +136,10 @@
     color: theme.$amino-blue-600;
     font-weight: 500;
 
+    .optionSecondaryText {
+      color: theme.$amino-blue-600;
+    }
+
     .optionIcon {
       color: theme.$amino-blue-600;
     }
@@ -151,7 +149,7 @@
 .optionContent {
   display: flex;
   align-items: center;
-  gap: 12px;
+  width: 100%;
 }
 
 .optionIcon {
@@ -175,4 +173,29 @@
   &.error {
     color: theme.$amino-error;
   }
+}
+
+.optionTextWrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+}
+
+.optionLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.optionSecondaryText {
+  font-size: theme.$amino-font-size-s;
+  color: theme.$amino-text-color-secondary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 100px;
+  text-align: right;
 }
