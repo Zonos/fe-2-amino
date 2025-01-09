@@ -5,12 +5,12 @@ import type { Meta, StoryFn } from '@storybook/react';
 import { Button } from 'src/components/button/Button';
 import { CoverSheet } from 'src/components/cover-sheet/CoverSheet';
 import {
-  type RadixInlineSelectProps,
   RadixInlineSelect,
+  type RadixInlineSelectProps,
 } from 'src/components/radix-select/RadixInlineSelect';
 import {
-  type RadixSelectProps,
   RadixSelect,
+  type RadixSelectProps,
 } from 'src/components/radix-select/RadixSelect';
 import { FlagIcon } from 'src/icons/flag-icon/FlagIcon';
 import { MoneyIcon } from 'src/icons/MoneyIcon';
@@ -250,3 +250,22 @@ export const WithCoversheet = () => {
     </>
   );
 };
+
+export const WithCustomOption = () => (
+  <BasicSelect
+    customOption={value => (
+      <div>
+        <span>{value}</span>
+        <span> - Custom option</span>
+      </div>
+    )}
+    label="Choose an option"
+    onChange={() => {}}
+    options={[
+      { label: 'Option 1', value: '1' },
+      { label: 'Option 2', value: '2' },
+      { label: 'Option 3', value: '3' },
+    ]}
+    value={null}
+  />
+);

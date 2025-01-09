@@ -14,20 +14,22 @@ import styles from './RadixSelect.module.scss';
 
 export type RadixSelectProps<V extends SelectValue = SelectValue> =
   BaseProps & {
+    customOption?: (value: V) => ReactNode;
     disabled?: boolean;
     error?: boolean;
     helpText?: string;
     icon?: ReactNode;
     label?: string;
+    onChange: (value: SelectOption<V>[] | SelectOption<V> | null) => void;
     options: SelectOption<V>[];
     placeholder?: string;
     size?: Size;
     value: SelectOption<V>[] | SelectOption<V> | null;
-    onChange: (value: SelectOption<V>[] | SelectOption<V> | null) => void;
   };
 
 export const RadixSelect = <V extends SelectValue>({
   className,
+  customOption,
   disabled,
   error,
   helpText,
@@ -125,23 +127,29 @@ export const RadixSelect = <V extends SelectValue>({
                 value={option.value?.toString() ?? ''}
               >
                 <Select.ItemText>
-                  <div className={styles.optionContent}>
-                    {option.icon && (
-                      <span className={styles.optionIcon}>{option.icon}</span>
-                    )}
-                    <div className={styles.optionTextWrapper}>
-                      <span className={styles.optionLabel}>{option.label}</span>
-                      {!option.secondaryText ? (
-                        <Select.ItemIndicator>
-                          <CheckmarkIcon color="blue600" size={20} />
-                        </Select.ItemIndicator>
-                      ) : (
-                        <span className={styles.optionSecondaryText}>
-                          {option.secondaryText}
-                        </span>
+                  {customOption ? (
+                    customOption(option.value)
+                  ) : (
+                    <div className={styles.optionContent}>
+                      {option.icon && (
+                        <span className={styles.optionIcon}>{option.icon}</span>
                       )}
+                      <div className={styles.optionTextWrapper}>
+                        <span className={styles.optionLabel}>
+                          {option.label}
+                        </span>
+                        {!option.secondaryText ? (
+                          <Select.ItemIndicator>
+                            <CheckmarkIcon color="blue600" size={20} />
+                          </Select.ItemIndicator>
+                        ) : (
+                          <span className={styles.optionSecondaryText}>
+                            {option.secondaryText}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </Select.ItemText>
               </Select.Item>
             ))}
