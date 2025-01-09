@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import type { Meta, StoryFn, StoryObj } from '@storybook/react';
 
-import { type CheckboxProps, Checkbox } from 'src/components/checkbox/Checkbox';
+import { Checkbox, type CheckboxProps } from 'src/components/checkbox/Checkbox';
 import { Flex } from 'src/components/flex/Flex';
 import { Text } from 'src/components/text/Text';
 import { Default } from 'src/icons/flags/Default';
@@ -35,6 +35,7 @@ const CheckboxMeta: Meta<CheckboxProps> = {
     },
   },
   render: Template,
+  tags: ['tested'],
 };
 
 export default CheckboxMeta;
@@ -73,13 +74,15 @@ export const BasicCheckboxWithoutSubtitle: StoryObj<CheckboxProps> = {
   },
 };
 
-export const CheckboxWithSubstituteLabel: StoryObj<CheckboxProps> = {
+export const CheckboxWithComplexSubtitle: StoryObj<CheckboxProps> = {
   args: {
+    helpText: 'This is help text',
     icon: <Default height={16} width={16} />,
-    label: 'Input label',
-    labelComponent: (
+    label:
+      'I have read and agree to the Zonos terms of service and UPS agreement',
+    subtitle: (
       <div className={styles.labelComponent}>
-        I have read and agree to the{' '}
+        See{' '}
         <a
           href="https://docs.zonos.com/legal"
           rel="noopener noreferrer"
@@ -102,14 +105,6 @@ export const CheckboxWithSubstituteLabel: StoryObj<CheckboxProps> = {
           target="_blank"
         >
           UPS Rate and Service Guideline
-        </a>
-        , and{' '}
-        <a
-          href="https://www.ups.com/assets/resources/media/terms_service_us.pdf"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          Tariff
         </a>
         .
       </div>

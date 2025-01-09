@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 
 import { IconBase } from 'src/icons/icon-base/_IconBase';
 import { theme } from 'src/styles/constants/theme';
-import type { Color } from 'src/types';
+import type { Color } from 'src/types/Color';
 import type { IconProps } from 'src/types/IconProps';
 
 export const ChevronDownCircleDuotoneIcon = forwardRef<
@@ -18,7 +18,7 @@ export const ChevronDownCircleDuotoneIcon = forwardRef<
     viewBox="0 0 24 24"
   >
     <path
-      d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16Z"
+      d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16"
       data-is-secondary-color="true"
       fill={secondaryColor ? `${theme[secondaryColor]}` : `${theme.gray400}`}
     />

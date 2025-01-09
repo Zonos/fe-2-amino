@@ -1,4 +1,5 @@
 import { type CSSProperties, type ReactNode, useMemo, useRef } from 'react';
+import { useInView } from 'react-intersection-observer';
 import type {
   ClearIndicatorProps,
   ControlProps,
@@ -12,14 +13,14 @@ import type {
   StylesConfig,
 } from 'react-select';
 import ReactSelect, { components as RScomponents } from 'react-select';
-import type Select from 'react-select/dist/declarations/src/Select';
 
 import clsx from 'clsx';
+import type Select from 'node_modules/react-select/dist/declarations/src/Select';
 
 import { Checkbox } from 'src/components/checkbox/Checkbox';
 import {
-  type HelpTextProps,
   HelpText,
+  type HelpTextProps,
 } from 'src/components/help-text/HelpText';
 import { CheckCircleIcon } from 'src/icons/CheckCircleIcon';
 import { DoubleChevronIcon } from 'src/icons/DoubleChevronIcon';
@@ -48,11 +49,11 @@ const getRadius = ($size?: Size) => {
 };
 
 type AdditionalProps<Value> = {
+  customOption?: (value: Value) => ReactNode;
   hasGroups?: boolean;
   icon?: ReactNode;
   label?: string;
   size?: Size;
-  customOption?: (value: Value) => ReactNode;
 };
 
 const ClearIndicator = <
@@ -197,6 +198,13 @@ export const CheckboxOptionComponent = <
     isSelected,
     selectProps,
   } = props;
+
+  // We can have a lot of options, and with things like country select, the icons are a lot to load.
+  const { inView, ref } = useInView({
+    fallbackInView: true,
+    triggerOnce: true,
+  });
+
   const { customOption, hasGroups } =
     selectProps as (typeof props)['selectProps'] &
       AdditionalProps<Option['value']>;
@@ -212,10 +220,12 @@ export const CheckboxOptionComponent = <
     }
 
     return (
-      <div className={styles.selectedSingleOptionWrapper}>
-        <IconLabel color={color} icon={data.icon}>
-          {children}
-        </IconLabel>
+      <div ref={ref} className={styles.selectedSingleOptionWrapper}>
+        {inView && (
+          <IconLabel color={color} icon={data.icon}>
+            {children}
+          </IconLabel>
+        )}
         {isSelected && <CheckCircleIcon color="blue600" size={24} />}
       </div>
     );
@@ -234,7 +244,6 @@ export const CheckboxOptionComponent = <
       >
         {selectProps.isMulti ? (
           <Checkbox
-            allowPropagation
             checked={isSelected}
             disabled={isDisabled}
             icon={data.icon}
@@ -250,16 +259,20 @@ export const CheckboxOptionComponent = <
   );
 };
 
-const localStyles: StylesConfig<
-  SelectOption,
-  boolean,
-  GroupBase<SelectOption>
-> = {
-  clearIndicator: provided => ({
+const getMergedStyles = <
+  V extends SelectValue,
+  Option extends SelectOption<V>,
+  IsMulti extends boolean,
+  Group extends GroupBase<Option>,
+>(
+  stylesProp?: StylesConfig<Option, IsMulti, Group>,
+): StylesConfig<Option, IsMulti, Group> => ({
+  clearIndicator: (provided, state) => ({
     ...provided,
     color: theme.gray700,
     paddingLeft: 14,
     paddingRight: 4,
+    ...stylesProp?.clearIndicator?.(provided, state),
   }),
   // container
   control: (provided, state) => {
@@ -279,44 +292,54 @@ const localStyles: StylesConfig<
       flexWrap: 'inherit',
       height: `var(--amino-size-${size})`,
       minHeight: `var(--amino-size-${size})`,
+      ...stylesProp?.control?.(provided, state),
     };
   },
-  dropdownIndicator: provided => ({
+  dropdownIndicator: (provided, state) => ({
     ...provided,
     color: theme.gray900,
     paddingLeft: 4,
     paddingRight: 10,
+    ...stylesProp?.dropdownIndicator?.(provided, state),
   }),
-  group: provided => ({
+  group: (provided, state) => ({
     ...provided,
     paddingBottom: 0,
     paddingTop: 0,
+    ...stylesProp?.group?.(provided, state),
   }),
   // groupHeading
   // indicatorsContainer
-  indicatorSeparator: provided => ({ ...provided, width: 0 }),
-  input: provided => ({
+  indicatorSeparator: (provided, state) => ({
+    ...provided,
+    width: 0,
+    ...stylesProp?.indicatorSeparator?.(provided, state),
+  }),
+  input: (provided, state) => ({
     ...provided,
     color: theme.textColor,
     opacity: 0.8,
+    ...stylesProp?.input?.(provided, state),
   }),
   // loadingIndicator
   // loadingMessage
-  menu: provided => ({
+  menu: (provided, state) => ({
     ...provided,
     background: theme.surfaceColor,
     borderRadius: 12,
     boxShadow: theme.v3ShadowLarge,
     marginTop: 4,
+    ...stylesProp?.menu?.(provided, state),
   }),
-  menuList: provided => ({
+  menuList: (provided, state) => ({
     ...provided,
     paddingLeft: 8,
     paddingRight: 8,
     paddingTop: 8,
+    ...stylesProp?.menuList?.(provided, state),
   }),
   // menuPortal
-  multiValue: provided => ({
+  multiValue: (provided, state) => ({
     ...provided,
     alignItems: 'center',
     background: theme.gray100,
@@ -325,10 +348,12 @@ const localStyles: StylesConfig<
     maxHeight: 20,
     minWidth: 'inherit',
     paddingRight: 2,
+    ...stylesProp?.multiValue?.(provided, state),
   }),
-  multiValueLabel: provided => ({
+  multiValueLabel: (provided, state) => ({
     ...provided,
     color: theme.textColor,
+    ...stylesProp?.multiValueLabel?.(provided, state),
   }),
   // multiValueRemove
   // noOptionsMessage
@@ -343,27 +368,31 @@ const localStyles: StylesConfig<
     paddingLeft: 8,
     paddingRight: 12,
     paddingTop: 7,
+    ...stylesProp?.option?.(provided, state),
   }),
-  placeholder: provided => ({
+  placeholder: (provided, state) => ({
     ...provided,
     '.has-label.is-focused &': {
       opacity: 1,
     },
     opacity: 0,
+    ...stylesProp?.placeholder?.(provided, state),
   }),
-  singleValue: provided => ({
+  singleValue: (provided, state) => ({
     ...provided,
     color: theme.textColor,
     fontWeight: 500,
+    ...stylesProp?.singleValue?.(provided, state),
   }),
-  valueContainer: provided => ({
+  valueContainer: (provided, state) => ({
     ...provided,
     '.has-icon &': { paddingLeft: 0 },
     flexWrap: 'nowrap',
     padding: 'unset',
     paddingLeft: 12,
+    ...stylesProp?.valueContainer?.(provided, state),
   }),
-};
+});
 
 export type StyledReactSelectProps<
   V extends SelectValue,
@@ -427,6 +456,8 @@ export const StyledReactSelect = <
     return false;
   }, [closeOnOutsideScroll]);
 
+  const { styles: stylesProp, ...restProps } = props;
+  const mergedStyles = getMergedStyles(stylesProp);
   return (
     <div
       className={clsx(styles.styledSelectWrapper, error && styles.hasError)}
@@ -470,10 +501,10 @@ export const StyledReactSelect = <
         styles={
           {
             ...style,
-            ...localStyles,
+            ...mergedStyles,
           } as StylesConfig<Option, IsMulti, Group>
         }
-        {...props}
+        {...restProps}
         {...additionalProps}
       />
       <HelpText error={error} helpText={helpText} />

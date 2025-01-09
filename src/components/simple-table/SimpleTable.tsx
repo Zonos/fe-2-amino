@@ -1,16 +1,15 @@
-import React, { type ReactNode, Fragment } from 'react';
+import React, { type ReactNode } from 'react';
 
 import clsx from 'clsx';
 
 import { Checkbox } from 'src/components/checkbox/Checkbox';
 import { Skeleton } from 'src/components/skeleton/Skeleton';
-import { TableRowCollapse } from 'src/components/table/TableRowCollapse';
 import { Text } from 'src/components/text/Text';
-import { Tooltip } from 'src/components/tooltip/Tooltip';
 import type { BaseProps } from 'src/types/BaseProps';
 import type { ReactComponent } from 'src/types/ReactComponent';
 
 import styles from './SimpleTable.module.scss';
+import { SimpleTableRow } from './SimpleTableRow';
 
 const getFlexAlignment = (alignment: SimpleTableHeaderBaseProps['align']) => {
   switch (alignment) {
@@ -24,23 +23,7 @@ const getFlexAlignment = (alignment: SimpleTableHeaderBaseProps['align']) => {
   }
 };
 
-const getTooltipPlacement = (
-  alignment: SimpleTableHeaderBaseProps['align'],
-) => {
-  switch (alignment) {
-    case 'center':
-      return 'bottom';
-    case 'end':
-      return 'bottom-end';
-    case 'start':
-    default:
-      return 'bottom-start';
-  }
-};
-
-const tooltipDelay = 800;
-
-type SimpleTableHeaderBaseProps = {
+export type SimpleTableHeaderBaseProps = {
   /**
    * Text alignment for a column
    * @default 'start'
@@ -116,8 +99,14 @@ export type SimpleTableProps<T extends object> = BaseProps & {
     expandedItemKeys: string[];
     toggleItem: (key: string) => void;
   };
+  /**
+   * Will make the whole row (each td) an anchor tag so native link functionality exists. If clicking just navigates, use this over onRowClick.
+   */
+  getRowLink?: (item: T) => string;
   headers: SimpleTableHeader<T>[];
   items: T[];
+  /** Adding unique list keys */
+  keyExtractor: (item: T) => string;
   /**
    * Render loading skeleton
    * @default false
@@ -144,6 +133,14 @@ export type SimpleTableProps<T extends object> = BaseProps & {
    */
   noHoverBackground?: boolean;
   /**
+   * Callback for clicking anywhere on row.
+   *
+   * If having buttons in the table, remember to call e.stopPropagation() to prevent this from firing.
+   */
+  onRowClick?: (item: T) => void;
+  /** Callback for hovering anywhere on row */
+  onRowHover?: (item: T) => void;
+  /**
    * Component places at the bottom of the table
    */
   renderFooter?: ReactNode;
@@ -158,10 +155,6 @@ export type SimpleTableProps<T extends object> = BaseProps & {
     anySelected?: boolean;
     enabled: boolean;
     headerCheckboxValue?: boolean;
-    /**
-     * Overrides custom handlers for more control
-     */
-    renderCustomHeaderCheckbox?: ReactNode;
     isRowCheckboxDisabled?: (item: T, index: number) => boolean;
     isRowChecked?: (item: T, index: number) => boolean;
     onHeaderCheckboxChange?: (checked: boolean) => void;
@@ -169,22 +162,12 @@ export type SimpleTableProps<T extends object> = BaseProps & {
     /**
      * Overrides custom handlers for more control
      */
+    renderCustomHeaderCheckbox?: ReactNode;
+    /**
+     * Overrides custom handlers for more control
+     */
     renderCustomRowCheckbox?: (item: T, index: number) => ReactNode;
   };
-  /**
-   * Will make the whole row (each td) an anchor tag so native link functionality exists. If clicking just navigates, use this over onRowClick.
-   */
-  getRowLink?: (item: T) => string;
-  /** Adding unique list keys */
-  keyExtractor: (item: T) => string;
-  /**
-   * Callback for clicking anywhere on row.
-   *
-   * If having buttons in the table, remember to call e.stopPropagation() to prevent this from firing.
-   */
-  onRowClick?: (item: T) => void;
-  /** Callback for hovering anywhere on row */
-  onRowHover?: (item: T) => void;
 };
 
 /**
@@ -220,96 +203,12 @@ export const SimpleTable = <T extends object>({
   },
   style,
 }: SimpleTableProps<T>) => {
-  const renderHeader = (header: SimpleTableHeader<T>, item: T) => {
-    const value = item[header.key];
-
-    const renderContent = (content: ReactNode) => {
-      const hasRowHoverShowChild = React.Children.toArray(content).some(
-        child => {
-          if (React.isValidElement(child)) {
-            return /row-hover-show|cell-hover-show/.test(child.props.className);
-          }
-          return false;
-        },
-      );
-
-      // If the cell has a child that should only show on hover, don't allow truncating
-      const tdClassNames = clsx(
-        header.textWrapMethod === 'truncate' &&
-          !hasRowHoverShowChild &&
-          styles.shouldTruncate,
-      );
-
-      const containerStyle = {
-        '--amino-cell-min-width': `${header.minWidth || 0}px`,
-      };
-
-      const cellClassNames = clsx(
-        header.noPadding && styles.noPadding,
-        header.textWrapMethod === 'normal' && styles.allowTextWrap,
-      );
-
-      const cellStyle = {
-        textAlign: header.align || 'start',
-      };
-
-      const tooltipPlacement = getTooltipPlacement(header.align);
-
-      if (getRowLink && !selectable.anySelected && !header.disabledLink) {
-        const LinkComponent = CustomLinkComponent || 'a';
-
-        return (
-          <td className={tdClassNames} style={containerStyle}>
-            <Tooltip
-              disabled={header.textWrapMethod !== 'truncate'}
-              enterDelay={tooltipDelay}
-              enterNextDelay={tooltipDelay}
-              placement={tooltipPlacement}
-              subtitle={content}
-            >
-              <LinkComponent
-                className={cellClassNames}
-                href={getRowLink(item)}
-                style={cellStyle}
-              >
-                {content}
-              </LinkComponent>
-            </Tooltip>
-          </td>
-        );
-      }
-
-      return (
-        <td className={tdClassNames} style={containerStyle}>
-          <Tooltip
-            disabled={header.textWrapMethod !== 'truncate'}
-            enterDelay={tooltipDelay}
-            enterNextDelay={tooltipDelay}
-            placement={tooltipPlacement}
-            subtitle={content}
-          >
-            {/* Child div required for proper truncating */}
-            <span className={cellClassNames} style={cellStyle}>
-              {content}
-            </span>
-          </Tooltip>
-        </td>
-      );
-    };
-
-    return header.renderCustom ? (
-      <>{renderContent(header.renderCustom(value, item))}</>
-    ) : (
-      <>{renderContent(String(value))}</>
-    );
-  };
-
   const renderRows = () => {
     if (loading) {
       return [...Array(loadingItems).keys()].map(n => (
         <tr key={n}>
           {selectable.enabled && (
-            <td>
+            <td className={styles.loading}>
               <div>
                 <Skeleton key={n} height={loadingSkeletonHeight} />
               </div>
@@ -333,117 +232,36 @@ export const SimpleTable = <T extends object>({
                   key={n}
                   height={loadingSkeletonHeight}
                   style={{
-                    width: '50%',
+                    width: '70%',
                   }}
                 />
               </div>
             </td>
           ))}
+          {collapsible.enabled && <td />}
         </tr>
       ));
     }
 
-    if (collapsible.enabled && collapsible.collapseContent?.length) {
-      const { collapseContent, expandedItemKeys, toggleItem } = collapsible;
-      return items.map((item, index) => {
-        const key = keyExtractor(item);
-        const collapsed = !expandedItemKeys.includes(key);
-        const rowCollapseContent = collapseContent?.find(x => x.key === key)
-          ?.content;
-        return (
-          <TableRowCollapse
-            key={key}
-            className={clsx(
-              !noHoverBackground && styles.withHover,
-              collapsed && styles.collapsed,
-              rowCollapseContent && styles.hasContent,
-            )}
-            collapsed={collapsed}
-            onToggleCollapse={() => {
-              toggleItem(key);
-              onRowClick?.(item);
-            }}
-            rowContent={
-              <>
-                {selectable.enabled && (
-                  <td>
-                    {selectable.renderCustomRowCheckbox?.(item, index) || (
-                      <Checkbox
-                        checked={
-                          selectable.isRowChecked?.(item, index) || false
-                        }
-                        disabled={
-                          selectable.isRowCheckboxDisabled?.(item, index) ||
-                          false
-                        }
-                        onChange={checked =>
-                          selectable.onRowCheckboxChange?.(checked, item, index)
-                        }
-                      />
-                    )}
-                  </td>
-                )}
-                {headers.map(header => (
-                  <Fragment key={header.key}>
-                    {renderHeader(header, item)}
-                  </Fragment>
-                ))}
-              </>
-            }
-          >
-            {rowCollapseContent}
-          </TableRowCollapse>
-        );
-      });
-    }
-
     return items.map((item, index) => {
-      const clickable =
-        !!onRowClick ||
-        (!!selectable.anySelected && !!selectable.onRowCheckboxChange);
+      const key = keyExtractor(item);
 
       return (
-        <tr
-          key={keyExtractor(item)}
-          className={clsx(
-            clickable && styles.clickable,
-            !noHoverBackground && styles.withHover,
-          )}
-          onClick={e => {
-            if (selectable.anySelected) {
-              if (!selectable.isRowCheckboxDisabled?.(item, index)) {
-                e.preventDefault();
-                selectable.onRowCheckboxChange?.(
-                  !selectable.isRowChecked?.(item, index),
-                  item,
-                  index,
-                );
-              }
-            } else {
-              onRowClick?.(item);
-            }
-          }}
-          onMouseEnter={() => onRowHover?.(item)}
-        >
-          {selectable.enabled && (
-            <td>
-              {selectable.renderCustomRowCheckbox?.(item, index) || (
-                <Checkbox
-                  checked={selectable.isRowChecked?.(item, index) || false}
-                  disabled={
-                    selectable.isRowCheckboxDisabled?.(item, index) || false
-                  }
-                  onChange={checked =>
-                    selectable.onRowCheckboxChange?.(checked, item, index)
-                  }
-                />
-              )}
-            </td>
-          )}
-          {headers.map(header => (
-            <Fragment key={header.key}>{renderHeader(header, item)}</Fragment>
-          ))}
-        </tr>
+        <SimpleTableRow
+          key={key}
+          CustomLinkComponent={CustomLinkComponent}
+          bordered={bordered}
+          collapsible={collapsible}
+          getRowLink={getRowLink}
+          headers={headers}
+          index={index}
+          item={item}
+          noHoverBackground={noHoverBackground}
+          onRowClick={onRowClick}
+          onRowHover={onRowHover}
+          rowKey={key}
+          selectable={selectable}
+        />
       );
     });
   };

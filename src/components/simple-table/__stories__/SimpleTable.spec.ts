@@ -1,4 +1,4 @@
-import test, { type Page, expect } from '@playwright/test';
+import test, { expect, type Page } from '@playwright/test';
 
 test.describe('SimpleTable', () => {
   let framePage: Page;
@@ -26,15 +26,17 @@ test.describe('SimpleTable', () => {
 
   test.describe('Ensure Selectable works', () => {
     test('Selectable', async () => {
-      const checkbox1 = framePage
-        .getByRole('row', { name: 'John 24 This is a long string' })
-        .locator('label');
+      const row1 = framePage.getByRole('row', {
+        name: 'John 24 Not long enough',
+      });
+      const checkbox1 = row1.locator('label');
       await checkbox1.click();
       await expect(checkbox1).toBeChecked();
 
-      const checkbox2 = framePage
-        .getByRole('row', { name: 'Joan 27 This is a long string' })
-        .locator('label');
+      const row2 = framePage.getByRole('row', {
+        name: 'Joan 27 This is a long string',
+      });
+      const checkbox2 = row2.locator('label');
       await checkbox2.click();
       await expect(checkbox2).toBeChecked();
 
@@ -53,6 +55,25 @@ test.describe('SimpleTable', () => {
           .getByRole('row', { name: 'Cade 26 This is a long string' })
           .locator('label'),
       ).toBeChecked();
+
+      await row1.click();
+
+      // Try to trigger row click and verify no action occurs
+      framePage.once('dialog', () => {
+        throw new Error('Dialog should not appear when row is selected');
+      });
+
+      // select all then unselect all and verify onClick works again
+      await checkboxAll.click();
+      await checkboxAll.click();
+
+      await expect(checkbox1).not.toBeChecked();
+      await expect(checkbox2).not.toBeChecked();
+
+      framePage.once('dialog', async dialog => {
+        expect(dialog.message()).toBe('Clicked John');
+        await dialog.dismiss();
+      });
     });
   });
 
@@ -235,9 +256,8 @@ test.describe('SimpleTable', () => {
         'tr:nth-child(1) > td:nth-child(4) > div > span',
       );
       await cell.evaluate(el => {
-        // eslint-disable-next-line no-param-reassign
         el.style.zIndex = '0';
-        // eslint-disable-next-line no-param-reassign
+
         el.style.position = 'relative';
       });
 
@@ -295,6 +315,58 @@ test.describe('SimpleTable', () => {
       // Expect link to be clicked (https://letmegooglethat.com/?q=John)
       await framePage.waitForLoadState('domcontentloaded');
       await expect(framePage.url()).toBe('https://letmegooglethat.com/?q=John');
+    });
+  });
+
+  test.describe('text wrap methods', () => {
+    test('Text Wrap Methods', async () => {
+      // Wait for cell with long text to be visible
+      const normalTable = framePage.locator('[data-test-id="normal-table"]');
+      const truncateTable = framePage.locator(
+        '[data-test-id="truncate-table"]',
+      );
+      const nowrapTable = framePage.locator('[data-test-id="nowrap-table"]');
+
+      await normalTable.waitFor();
+
+      // Test normal wrapping
+      const normalCell = normalTable
+        .locator('tbody tr')
+        .first()
+        .locator('td')
+        .first();
+      await expect(normalCell).toHaveCSS('white-space', 'normal');
+      await expect(normalCell).not.toHaveCSS('text-overflow', 'ellipsis');
+      await expect(normalCell).not.toHaveCSS('overflow', 'hidden');
+
+      const normalCellBounds = await normalCell.boundingBox();
+      expect(normalCellBounds?.height).toBeGreaterThan(50); // Height indicates multiple lines
+
+      // Test truncating
+      const truncateCell = truncateTable
+        .locator('tbody tr')
+        .first()
+        .locator('td > :first-child')
+        .first();
+
+      await expect(truncateCell).toHaveCSS('white-space', 'nowrap');
+      await expect(truncateCell).toHaveCSS('text-overflow', 'ellipsis');
+      await expect(truncateCell).toHaveCSS('overflow', 'hidden');
+      // There is no good way to verify truncation with ellipsis is actually displayed
+
+      // Test nowrap
+      const nowrapCell = nowrapTable
+        .locator('tbody tr')
+        .first()
+        .locator('td > :first-child')
+        .first();
+      await expect(nowrapCell).toHaveCSS('white-space', 'nowrap');
+      await expect(nowrapCell).not.toHaveCSS('text-overflow', 'ellipsis');
+      await expect(nowrapCell).not.toHaveCSS('overflow', 'hidden');
+
+      const nowrapCellBounds = await nowrapCell.boundingBox();
+      const viewportSize = await framePage.viewportSize();
+      expect(nowrapCellBounds?.width).toBeGreaterThan(viewportSize?.width || 0);
     });
   });
 });
